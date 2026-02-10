@@ -6,6 +6,14 @@ from pathlib import Path
 import plotly.express as px
 import plotly.graph_objects as go
 
+# Add matplotlib import
+try:
+    import matplotlib
+    import matplotlib.pyplot as plt
+    matplotlib_available = True
+except ImportError:
+    matplotlib_available = False
+
 # Page configuration - MUST BE FIRST
 st.set_page_config(
     page_title="Tyre Emissions Dashboard",
@@ -253,6 +261,7 @@ with col_left:
                 "**Country**",
                 countries_with_other,
                 index=0,
+                help="Select a country from the dataset",
                 key="country_select"
             )
             
@@ -435,14 +444,15 @@ with col_left:
                 help="Select 'Yes' to include sustainable sourcing"
             )
     
-    # Energy Type
+    # Energy Type - FIXED EMPTY LABEL
     st.markdown('<div class="group-header"><span class="icon">⚡</span> Energy Type <span class="required-badge">REQUIRED</span></div>', unsafe_allow_html=True)
     
     energy_type = st.radio(
-        "",
+        "Energy Source",
         ["Renewable Energy 🌿", "Non-Renewable Energy 🔥"],
         horizontal=True,
-        key="energy_type"
+        key="energy_type",
+        label_visibility="collapsed"
     )
     energy_type = "Renewable Energy" if "Renewable" in energy_type else "Non-Renewable Energy"
     
@@ -910,7 +920,7 @@ with col_right:
         )
         st.plotly_chart(fig, use_container_width=True)
         
-        # Detailed Breakdown Table
+        # Detailed Breakdown Table - FIXED THE BACKGROUND_GRADIENT ERROR
         st.markdown("### 📋 Detailed Emission Breakdown")
         
         with st.expander("View Detailed Calculations", expanded=False):
@@ -920,13 +930,22 @@ with col_right:
             })
             detailed_df["MTCO2"] = detailed_df["MTCO2"].round(2)
             
-            # Display with better formatting
-            st.dataframe(
-                detailed_df.style.format({'MTCO2': '{:,.2f}'})
-                .background_gradient(subset=['MTCO2'], cmap='RdYlGn_r'),
-                use_container_width=True,
-                height=300
-            )
+            # Display with better formatting - FIXED LINE 924
+            if matplotlib_available:
+                st.dataframe(
+                    detailed_df.style.format({'MTCO2': '{:,.2f}'})
+                    .background_gradient(subset=['MTCO2'], cmap='RdYlGn_r'),
+                    use_container_width=True,
+                    height=300
+                )
+            else:
+                # Fallback without matplotlib
+                st.dataframe(
+                    detailed_df.style.format({'MTCO2': '{:,.2f}'}),
+                    use_container_width=True,
+                    height=300
+                )
+                st.warning("⚠️ Matplotlib not available - using simple formatting")
             
             # Download button
             csv = detailed_df.to_csv(index=False)
