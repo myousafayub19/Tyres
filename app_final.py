@@ -161,17 +161,56 @@ st.markdown("""
         font-size: 0.9rem;
     }
     .moon-journey {
-        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        background: linear-gradient(135deg, #0B0B2B 0%, #1B1B4B 50%, #2B2B6B 100%);
         padding: 20px;
         border-radius: 15px;
         color: white;
         margin: 20px 0;
         text-align: center;
         border: 2px solid #4a4a8a;
+        position: relative;
+        overflow: hidden;
     }
+    .moon-journey::before {
+        content: "★";
+        position: absolute;
+        color: rgba(255, 255, 255, 0.3);
+        font-size: 20px;
+        top: 10%;
+        left: 20%;
+        animation: twinkle 3s infinite;
+    }
+    .moon-journey::after {
+        content: "✦";
+        position: absolute;
+        color: rgba(255, 255, 255, 0.3);
+        font-size: 15px;
+        bottom: 15%;
+        right: 25%;
+        animation: twinkle 4s infinite;
+    }
+    @keyframes twinkle {
+        0% { opacity: 0.3; }
+        50% { opacity: 1; }
+        100% { opacity: 0.3; }
+    }
+    .star {
+        position: absolute;
+        color: white;
+        font-size: 12px;
+        opacity: 0.5;
+        animation: twinkle 2s infinite;
+    }
+    .star1 { top: 30%; left: 10%; animation-delay: 0s; }
+    .star2 { top: 70%; left: 85%; animation-delay: 1s; }
+    .star3 { top: 20%; left: 90%; animation-delay: 2s; }
+    .star4 { top: 80%; left: 15%; animation-delay: 1.5s; }
+    .star5 { top: 40%; left: 50%; animation-delay: 0.5s; }
     .car-icon {
         font-size: 3rem;
         animation: drive 3s infinite;
+        position: relative;
+        z-index: 2;
     }
     @keyframes drive {
         0% { transform: translateX(-20px); }
@@ -181,17 +220,29 @@ st.markdown("""
     .moon-icon {
         font-size: 3rem;
         color: #ffd700;
+        position: relative;
+        z-index: 2;
+        animation: glow 3s infinite;
+    }
+    @keyframes glow {
+        0% { filter: drop-shadow(0 0 5px #ffd700); }
+        50% { filter: drop-shadow(0 0 15px #ffd700); }
+        100% { filter: drop-shadow(0 0 5px #ffd700); }
     }
     .journey-stats {
         font-size: 1.5rem;
         font-weight: bold;
         color: #ffd700;
         margin: 10px 0;
+        position: relative;
+        z-index: 2;
     }
     .journey-text {
         font-size: 1.1rem;
         color: #a0a0ff;
         margin: 5px 0;
+        position: relative;
+        z-index: 2;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -923,16 +974,27 @@ with col_right:
         
         st.markdown("---")
         
-        # NEW: Moon Journey Visualization
+        # NEW: Moon Journey Visualization with Galaxy Stars Night Background
         st.markdown("### 🚗 Journey to the Moon")
         
         # Calculate values
-        miles_co2_eq = abs(total_emissions) / 0.0004  # Using absolute value for visualization
+        miles_co2_eq = abs(total_emissions) / 0.0004
         round_trips = miles_co2_eq / 477710
         
-        # Moon journey visualization
+        # Determine text based on emissions sign
+        if total_emissions < 0:
+            emission_text = "miles CO₂ eq. emissions saving"
+        else:
+            emission_text = "miles CO₂ eq. emissions"
+        
+        # Moon journey visualization with galaxy stars night background
         st.markdown(f'''
         <div class="moon-journey">
+            <div class="star star1">✧</div>
+            <div class="star star2">✦</div>
+            <div class="star star3">✧</div>
+            <div class="star star4">✦</div>
+            <div class="star star5">✧</div>
             <div style="display: flex; justify-content: space-around; align-items: center; margin-bottom: 20px;">
                 <div>
                     <div class="car-icon">🚗</div>
@@ -945,7 +1007,7 @@ with col_right:
                 </div>
             </div>
             <div class="journey-stats">
-                {miles_co2_eq:,.0f} miles CO₂ eq. emissions
+                {miles_co2_eq:,.0f} {emission_text}
             </div>
             <div class="journey-text">
                 This is equivalent to {round_trips:.1f} round trips to the moon!
