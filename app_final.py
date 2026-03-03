@@ -160,6 +160,39 @@ st.markdown("""
         margin-left: 5px;
         font-size: 0.9rem;
     }
+    .moon-journey {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        padding: 20px;
+        border-radius: 15px;
+        color: white;
+        margin: 20px 0;
+        text-align: center;
+        border: 2px solid #4a4a8a;
+    }
+    .car-icon {
+        font-size: 3rem;
+        animation: drive 3s infinite;
+    }
+    @keyframes drive {
+        0% { transform: translateX(-20px); }
+        50% { transform: translateX(20px); }
+        100% { transform: translateX(-20px); }
+    }
+    .moon-icon {
+        font-size: 3rem;
+        color: #ffd700;
+    }
+    .journey-stats {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #ffd700;
+        margin: 10px 0;
+    }
+    .journey-text {
+        font-size: 1.1rem;
+        color: #a0a0ff;
+        margin: 5px 0;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -521,34 +554,38 @@ with col_left:
             index=2  # Default to High
         )
     
-    # Group 5: Logistics
+    # Group 5: Logistics - UPDATED WITH PERCENTAGE SELECTION
     st.markdown('<div class="group-header"><span class="icon">🚚</span> Group 5: Logistics</div>', unsafe_allow_html=True)
     
     with st.container():
-        if sustainable == "Yes":
-            col_g5_1, col_g5_2 = st.columns(2)
-            with col_g5_1:
-                logistics_virgin = st.number_input(
-                    "Logistics Virgin (%)",
-                    0, 100, 50,
-                    key="logistics_virgin",
-                    help="Percentage for virgin material logistics"
-                )
-            with col_g5_2:
-                logistics_recycled = st.number_input(
-                    "Logistics Recycled (%)",
-                    0, 100, 50,
-                    key="logistics_recycled",
-                    help="Percentage for recycled material logistics"
-                )
-            
-            total_logistics = logistics_virgin + logistics_recycled
-            if total_logistics != 100:
-                st.error(f"Sum should be 100% (Current: {total_logistics}%)")
+        st.markdown("**Select Logistics Material Percentages**")
+        col_g5_1, col_g5_2 = st.columns(2)
+        
+        with col_g5_1:
+            logistics_virgin = st.number_input(
+                "Logistics Virgin Material (%)",
+                0, 100, 50,
+                key="logistics_virgin",
+                help="Percentage of logistics for virgin materials"
+            )
+        with col_g5_2:
+            logistics_recycled = st.number_input(
+                "Logistics Recycled Material (%)", 
+                0, 100, 50,
+                key="logistics_recycled",
+                help="Percentage of logistics for recycled materials"
+            )
+        
+        total_logistics = logistics_virgin + logistics_recycled
+        if total_logistics != 100:
+            st.error(f"❌ Sum should be 100% (Current: {total_logistics}%)")
         else:
-            logistics_virgin = virgin_percent
-            logistics_recycled = recycled_percent
-            st.info("📋 Auto-copied percentages from Group 1")
+            st.success(f"✅ Logistics percentages sum to 100%")
+        
+        if sustainable == "Yes" and total_logistics == 100:
+            st.info("ℹ️ Using custom logistics percentages")
+        elif sustainable == "Not Available" and total_logistics == 100:
+            st.info("ℹ️ Using custom logistics percentages (independent from Group 1)")
     
     # Group 6: Life Cycle Usage
     st.markdown('<div class="group-header"><span class="icon">🔄</span> Group 6: Life Cycle Usage</div>', unsafe_allow_html=True)
@@ -669,7 +706,7 @@ with col_right:
                             calculations["Energy Non-Renewable Virgin"] = avg_values * 1.2 * (nonrenew_virgin / 100)
                             calculations["Energy Non-Renewable Recycled"] = avg_values * 1.0 * (nonrenew_recycled / 100)
                         
-                        # Logistics
+                        # Logistics - Updated to use new percentages
                         calculations["Logistics Virgin"] = avg_values * 0.6 * (logistics_virgin / 100)
                         calculations["Logistics Recycled"] = avg_values * 0.4 * (logistics_recycled / 100)
                         
@@ -737,7 +774,7 @@ with col_right:
                         water_df = load_csv_file(get_file_path(option, water_file))
                         calculations["Water Conservation"] = get_value(water_df, country, year)
                         
-                        # Group 5: Logistics
+                        # Group 5: Logistics - Updated to use new percentages
                         lev_df = load_csv_file(get_file_path(option, f"{logistics_prefix}.1LEV"))
                         ler_df = load_csv_file(get_file_path(option, f"{logistics_prefix}.2LER"))
                         
@@ -885,6 +922,39 @@ with col_right:
             st.markdown('</div>', unsafe_allow_html=True)
         
         st.markdown("---")
+        
+        # NEW: Moon Journey Visualization
+        st.markdown("### 🚗 Journey to the Moon")
+        
+        # Calculate values
+        miles_co2_eq = abs(total_emissions) / 0.0004  # Using absolute value for visualization
+        round_trips = miles_co2_eq / 477710
+        
+        # Moon journey visualization
+        st.markdown(f'''
+        <div class="moon-journey">
+            <div style="display: flex; justify-content: space-around; align-items: center; margin-bottom: 20px;">
+                <div>
+                    <div class="car-icon">🚗</div>
+                    <div class="journey-text">Passenger Car</div>
+                </div>
+                <div style="font-size: 2rem;">➡️</div>
+                <div>
+                    <div class="moon-icon">🌕</div>
+                    <div class="journey-text">Moon</div>
+                </div>
+            </div>
+            <div class="journey-stats">
+                {miles_co2_eq:,.0f} miles CO₂ eq. emissions
+            </div>
+            <div class="journey-text">
+                This is equivalent to {round_trips:.1f} round trips to the moon!
+            </div>
+            <div style="margin-top: 15px; font-size: 0.9rem; color: #a0a0ff;">
+                Based on your total emissions of {abs(total_emissions):,.2f} MTCO₂
+            </div>
+        </div>
+        ''', unsafe_allow_html=True)
         
         # Emission Breakdown Chart
         st.markdown("### 📈 Emissions Breakdown by Group")
