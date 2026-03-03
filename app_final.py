@@ -248,7 +248,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Title
-st.markdown('<h1 class="main-title">🌍 Zero Emissions Strategy Tool for Tyres</h1>', unsafe_allow_html=True)
+st.markdown('<h1 class="main-title">🌍 Zero Emissions Strategy Tool for Tyres (ZEST)</h1>', unsafe_allow_html=True)
 st.markdown('<p class="sub-title">Real-time emissions calculation with sustainability recommendations</p>', unsafe_allow_html=True)
 
 # Data Loading Functions
@@ -1194,4 +1194,5 @@ with st.expander("🔧 Debug & Data Info"):
                     st.error(f"Error: {e}")
         else:
             st.error(f"Directory not found: {data_dir}")
+
 
